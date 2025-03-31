@@ -1,0 +1,27 @@
+<svg width="250" height="250" viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="arabesque-interlacing" x="0" y="0" width="125" height="125" patternUnits="userSpaceOnUse">
+      <!-- Interlacing pattern base -->
+      <path d="M0,62.5 C31.25,62.5 31.25,0 62.5,0 C93.75,0 93.75,62.5 125,62.5 C93.75,62.5 93.75,125 62.5,125 C31.25,125 31.25,62.5 0,62.5 Z" 
+            fill="none" stroke="#007A3D" stroke-width="1.5" opacity="0.25"/>
+      
+      <!-- Rotated interlacing -->
+      <path d="M62.5,0 C62.5,31.25 125,31.25 125,62.5 C125,93.75 62.5,93.75 62.5,125 C62.5,93.75 0,93.75 0,62.5 C0,31.25 62.5,31.25 62.5,0 Z" 
+            fill="none" stroke="#CE1126" stroke-width="1.5" opacity="0.25"/>
+      
+      <!-- Gold accent lines -->
+      <path d="M31.25,31.25 L93.75,93.75" fill="none" stroke="#FFD700" stroke-width="1" opacity="0.3"/>
+      <path d="M93.75,31.25 L31.25,93.75" fill="none" stroke="#FFD700" stroke-width="1" opacity="0.3"/>
+      
+      <!-- Center point -->
+      <circle cx="62.5" cy="62.5" r="5" fill="none" stroke="#FFD700" stroke-width="1" opacity="0.4"/>
+      
+      <!-- Corner decorations -->
+      <circle cx="0" cy="0" r="3" fill="none" stroke="#007A3D" stroke-width="1" opacity="0.3"/>
+      <circle cx="125" cy="0" r="3" fill="none" stroke="#007A3D" stroke-width="1" opacity="0.3"/>
+      <circle cx="0" cy="125" r="3" fill="none" stroke="#007A3D" stroke-width="1" opacity="0.3"/>
+      <circle cx="125" cy="125" r="3" fill="none" stroke="#007A3D" stroke-width="1" opacity="0.3"/>
+    </pattern>
+  </defs>
+  <rect width="250" height="250" fill="url(#arabesque-interlacing)"/>
+</svg>

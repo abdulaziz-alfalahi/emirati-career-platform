@@ -1,0 +1,96 @@
+Build a complete platform for the Emirati journey from student to retirement.
+
+The platform will have the following personas:
+1- School Student
+2- National Service Participant
+ 3- University Student
+4- Internship Trainee
+5- Full-Time Employee
+6- Part-Time Employee
+7- Gig Worker
+8- Jobseeker
+9- Lifelong Learner
+10- Entrepreneur/Business Owner
+11- Retiree
+12- Educational Institution Representative
+13- Parent
+14- Private Sector Recruiter
+15- Government Representative
+16- Retiree Advocate
+17- Training Center Representative
+18- Assessment Center Representative
+19- Mentor/Coach
+20- Career Advisor
+21- Platform Operator
+22- Platform Administrator
+23- Super User
+
+The platform will have the following structure:
+1-	A dashboard for school students to access platform resources such as workshops, summer knowledge Camps, school grades and reports, Mentors, Training programs, Assessments, Scholarship opportunities, Gig work, and other relevant resources.
+2-	A dashboard for university students to access platform resources such as workshops, internship opportunities, part-time jobs, gig work, university grades and reports, Training programs, Assessments, Scholarship opportunities, mentors, career advisors, and other platform resources.
+3-	A dashboard for parents to access relevant platform resources to help their kids make the right decisions and leverage platform resources.
+4-	A dashboard for Educational Institution Representatives to upload grades and reports, track school/university students, list scholarship and apprenticeship opportunities, track internship progress and access relevant platform resources.
+5-	A dashboard for Training Center Representatives to list their training programs and monitor engagement.
+6-	A dashboard for Assessment Center Representatives to list their assessment programs such as psychometric tests, IQ, EQ, Functional tests … etc., and monitor engagement.
+7-	A dashboard for Mentor/Coach to interact with relevant platform personas and have access to relevant platform resources.
+8-	A dashboard for Caree Advisors to interact with relevant platform personas and have access to relevant platform resources.
+9-	A dashboard for Private Sector Recruiters to list and upload job descriptions for full-time, part-time, and gig work.  List internship, and scholarship opportunities.  Specify the geographical location of the vacancy.  Find the best matching candidates through AI matching capabilities, short list individuals, communicate through the platform, schedule and conduct video conferencing online interviews on the platform, select and complete the recruitment process, or provide detailed feedback on interview outcomes upon rejection to trigger development plans for individuals recommended by AI.
+10-	 A dashboard for jobseekers where they can build their resumes by filling in a form or uploading a resume or linking their LinkedIn profiles. In the form jobseekers will choose their home area from a map and be able to specify the commute distance they are willing to take for the job.  The AI will rank and list vacancies relevant to the individual and show their location on the map where the individual will have the freedom to choose accordingly and apply for the vacancy.  The jobseeker will be able to track all applications statuses.
+11-	A dashboard for Retirees.
+12-	A dashboard for Retiree Advocate.
+13-	A dashboard for Government Representatives to list vacancies and scholarship opportunities.
+14-	A dashboard for Platform Operator.
+15-	A dashboard for Platform Administrator.
+16-	A dashboard for Platform Super User. 
+
+The platform will have the following services:
+1-	Authentication and role-based access.
+2-	Student career pathway visualization.
+3-	Summer knowledge camps.
+4-	Scholarships.
+5-	Internships.
+6-	A resume builder, parsing text, images, and retrieving information from LinkedIn.  The individual will select a residence location area from an interactive map.
+7-	Job opportunities recommended through AI.
+8-	Training opportunities recommended through AI.
+9-	Assessment opportunities.
+10-	Coaching.
+11-	Career advisory.
+12-	 Online interviews.
+13-	Portfolio builder.
+14-	Reports and Analytics though AI.
+
+The platform will integrate with different service providers through APIs.  Create a page accessible by platform administrator and super user where they can insert the API keys for the different integrations.
+
+ 1: Basic Resume Parsing with Affinda
+•	Implement Affinda for reliable resume parsing (free tier for testing)
+•	Create a simple UI to display parsed resume data
+•	Focus on getting the core parsing functionality working reliably
+2: Initial Career Recommendations with OpenAI
+•	Add basic career recommendations using OpenAI
+•	Implement skill gap analysis between resumes and job descriptions
+•	Suggest training resources for missing skills
+3: Enhanced Insights with LinkedIn Data
+•	Integrate LinkedIn APIs for real-world career progression data
+•	Show similar professionals and their career paths
+•	Provide industry-specific insights
+4: Advanced Features with Skills Taxonomy
+•	Implement standardized skills taxonomy
+•	Add market demand data for skills
+•	Provide more sophisticated career pathway visualizations
+
+This project to be built with .
+•	Vite
+•	TypeScript
+•	React
+•	shadcn-ui
+•	Tailwind CSS
+
+Will have a repo on Github and will use Supabase.
+Manus is responsible for building the whole platform, writing the code and making it ready for deployment.
+
+
+
+
+
+
+
