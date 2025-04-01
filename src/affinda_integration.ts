@@ -84,7 +84,7 @@ const AffindaService = {
    * @param file The resume file to parse
    * @returns Structured resume data
    */
-  parseResume: async (file: File): Promise<AffindaResponse<ResumeData>> => {
+  parseResume: async (base64Data: string, name: string, type: string, file: File): Promise<AffindaResponse<ResumeData>> => {
     try {
       const formData = new FormData();
       formData.append('file', file);

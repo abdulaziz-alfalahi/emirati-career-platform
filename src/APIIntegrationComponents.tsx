@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import supabase from './supabase';
 import OpenAIService from './openai_integration';
 import AffindaService from './affinda_integration';
 import MapboxService from './mapbox_integration';
 import './APIIntegrationComponents.css';
-
-// Initialize Supabase client
-const supabaseUrl = 'YOUR_SUPABASE_URL';
-const supabaseKey = 'YOUR_SUPABASE_KEY';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Career Advice Component
 export const CareerAdviceComponent: React.FC = () => {
@@ -250,86 +245,80 @@ export const ResumeParserComponent: React.FC = () => {
           <div className="resume-section">
             <h4>Personal Information</h4>
             <p><strong>Name:</strong> {resumeData.name}</p>
-            <p><strong>Email:</strong> {resumeData.email}</p>
-            <p><strong>Phone:</strong> {resumeData.phone}</p>
-            <p><strong>Location:</strong> {resumeData.location.formatted}</p>
+            {resumeData.email && <p><strong>Email:</strong> {resumeData.email}</p>}
+            {resumeData.phone && <p><strong>Phone:</strong> {resumeData.phone}</p>}
+            {resumeData.location && <p><strong>Location:</strong> {resumeData.location}</p>}
           </div>
           
-          {resumeData.summary && (
+          {resumeData.education && resumeData.education.length > 0 && (
             <div className="resume-section">
-              <h4>Summary</h4>
-              <p>{resumeData.summary}</p>
+              <h4>Education</h4>
+              <ul>
+                {resumeData.education.map((edu: any, index: number) => (
+                  <li key={index}>
+                    <p><strong>{edu.institution}</strong></p>
+                    {edu.degree && <p>{edu.degree}</p>}
+                    {edu.date && <p>{edu.date}</p>}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
           
-          <div className="resume-section">
-            <h4>Skills</h4>
-            <ul className="skills-list">
-              {resumeData.skills.map((skill: any, index: number) => (
-                <li key={index}>
-                  {skill.name}
-                  {skill.level && <span className="skill-level"> ({skill.level})</span>}
-                </li>
-              ))}
-            </ul>
-          </div>
+          {resumeData.workExperience && resumeData.workExperience.length > 0 && (
+            <div className="resume-section">
+              <h4>Work Experience</h4>
+              <ul>
+                {resumeData.workExperience.map((exp: any, index: number) => (
+                  <li key={index}>
+                    <p><strong>{exp.position}</strong> at {exp.company}</p>
+                    {exp.date && <p>{exp.date}</p>}
+                    {exp.description && <p>{exp.description}</p>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           
-          <div className="resume-section">
-            <h4>Work Experience</h4>
-            {resumeData.workExperience.map((exp: any, index: number) => (
-              <div key={index} className="experience-item">
-                <h5>{exp.jobTitle} at {exp.organization}</h5>
-                {(exp.startDate || exp.endDate) && (
-                  <p className="date-range">
-                    {exp.startDate || 'Unknown'} - {exp.endDate || 'Present'}
-                  </p>
-                )}
-                {exp.location && <p className="location">{exp.location}</p>}
-                {exp.description && <p className="description">{exp.description}</p>}
+          {resumeData.skills && resumeData.skills.length > 0 && (
+            <div className="resume-section">
+              <h4>Skills</h4>
+              <div className="skills-list">
+                {resumeData.skills.map((skill: string, index: number) => (
+                  <span key={index} className="skill-tag">{skill}</span>
+                ))}
               </div>
-            ))}
-          </div>
-          
-          <div className="resume-section">
-            <h4>Education</h4>
-            {resumeData.education.map((edu: any, index: number) => (
-              <div key={index} className="education-item">
-                <h5>{edu.degree} at {edu.institution}</h5>
-                {(edu.startDate || edu.endDate) && (
-                  <p className="date-range">
-                    {edu.startDate || 'Unknown'} - {edu.endDate || 'Present'}
-                  </p>
-                )}
-                {edu.gpa && <p className="gpa">GPA: {edu.gpa}</p>}
-              </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 };
 
-// Job Location Search Component
-export const JobLocationSearchComponent: React.FC = () => {
+// Location Search Component
+export const LocationSearchComponent: React.FC = () => {
   const [location, setLocation] = useState<string>('');
   const [radius, setRadius] = useState<number>(10);
-  const [nearbyJobs, setNearbyJobs] = useState<any>(null);
+  const [jobType, setJobType] = useState<string>('all');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [mapVisible, setMapVisible] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
+    
     try {
-      const response = await MapboxService.findNearbyJobs(location, radius);
+      const response = await MapboxService.searchJobsByLocation(location, radius, jobType);
       
       if (response.success && response.data) {
-        setNearbyJobs(response.data);
+        setSearchResults(response.data);
+        setMapVisible(true);
       } else {
-        setError(response.error || 'Failed to find nearby jobs');
+        setError(response.error || 'Failed to search jobs by location');
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred');
@@ -339,12 +328,12 @@ export const JobLocationSearchComponent: React.FC = () => {
   };
 
   return (
-    <div className="job-location-container">
-      <h2>Find Jobs Near You</h2>
+    <div className="location-search-container">
+      <h2>Search Jobs by Location</h2>
       
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="location">Your Location</label>
+          <label htmlFor="location">Location</label>
           <input
             type="text"
             id="location"
@@ -358,433 +347,63 @@ export const JobLocationSearchComponent: React.FC = () => {
         <div className="form-group">
           <label htmlFor="radius">Search Radius (km)</label>
           <input
-            type="number"
+            type="range"
             id="radius"
-            value={radius}
-            onChange={(e) => setRadius(Number(e.target.value))}
             min="1"
-            max="100"
+            max="50"
+            value={radius}
+            onChange={(e) => setRadius(parseInt(e.target.value))}
           />
-        </div>
-        
-        <button type="submit" disabled={loading}>
-          {loading ? 'Searching...' : 'Find Nearby Jobs'}
-        </button>
-      </form>
-      
-      {error && <div className="error-message">{error}</div>}
-      
-      {nearbyJobs && (
-        <div className="nearby-jobs-results">
-          <h3>Jobs Near {nearbyJobs.userLocation.name}</h3>
-          
-          {nearbyJobs.jobs.length === 0 ? (
-            <p>No jobs found within {radius} km of your location.</p>
-          ) : (
-            <div className="jobs-list">
-              {nearbyJobs.jobs.map((job: any) => (
-                <div key={job.id} className="job-card">
-                  <h4>{job.title}</h4>
-                  <p className="company">{job.company}</p>
-                  <p className="location">{job.location}</p>
-                  <p className="distance">
-                    {(job.distance.value / 1000).toFixed(2)} km away
-                  </p>
-                  <button 
-                    className="view-job-btn"
-                    onClick={() => window.location.href = `/jobs/${job.id}`}
-                  >
-                    View Job
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Commute Calculator Component
-export const CommuteCalculatorComponent: React.FC = () => {
-  const [homeLocation, setHomeLocation] = useState<string>('');
-  const [workLocation, setWorkLocation] = useState<string>('');
-  const [mode, setMode] = useState<'driving' | 'walking' | 'cycling'>('driving');
-  const [commuteData, setCommuteData] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await MapboxService.analyzeCommute(homeLocation, workLocation, mode);
-      
-      if (response.success && response.data) {
-        setCommuteData(response.data);
-      } else {
-        setError(response.error || 'Failed to analyze commute');
-      }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="commute-calculator-container">
-      <h2>Commute Calculator</h2>
-      
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="homeLocation">Home Location</label>
-          <input
-            type="text"
-            id="homeLocation"
-            value={homeLocation}
-            onChange={(e) => setHomeLocation(e.target.value)}
-            placeholder="e.g., Downtown Dubai"
-            required
-          />
+          <span>{radius} km</span>
         </div>
         
         <div className="form-group">
-          <label htmlFor="workLocation">Work Location</label>
-          <input
-            type="text"
-            id="workLocation"
-            value={workLocation}
-            onChange={(e) => setWorkLocation(e.target.value)}
-            placeholder="e.g., Dubai Media City"
-            required
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="mode">Transportation Mode</label>
+          <label htmlFor="jobType">Job Type</label>
           <select
-            id="mode"
-            value={mode}
-            onChange={(e) => setMode(e.target.value as 'driving' | 'walking' | 'cycling')}
+            id="jobType"
+            value={jobType}
+            onChange={(e) => setJobType(e.target.value)}
           >
-            <option value="driving">Driving</option>
-            <option value="walking">Walking</option>
-            <option value="cycling">Cycling</option>
+            <option value="all">All Job Types</option>
+            <option value="fulltime">Full Time</option>
+            <option value="parttime">Part Time</option>
+            <option value="contract">Contract</option>
+            <option value="internship">Internship</option>
           </select>
         </div>
         
-        <button type="submit" disabled={loading}>
-          {loading ? 'Calculating...' : 'Calculate Commute'}
+        <button type="submit" disabled={loading || !location}>
+          {loading ? 'Searching...' : 'Search Jobs'}
         </button>
       </form>
       
       {error && <div className="error-message">{error}</div>}
       
-      {commuteData && (
-        <div className="commute-results">
-          <h3>Commute Analysis</h3>
+      {mapVisible && (
+        <div className="map-container">
+          <h3>Job Opportunities Near {location}</h3>
+          <div id="map" className="map"></div>
           
-          <div className="commute-summary">
-            <div className="commute-detail">
-              <span className="label">From:</span>
-              <span className="value">{commuteData.origin.name}</span>
-            </div>
-            
-            <div className="commute-detail">
-              <span className="label">To:</span>
-              <span className="value">{commuteData.destination.name}</span>
-            </div>
-            
-            <div className="commute-detail">
-              <span className="label">Distance:</span>
-              <span className="value">
-                {(commuteData.distance.value / 1000).toFixed(2)} km
-              </span>
-            </div>
-            
-            <div className="commute-detail">
-              <span className="label">Duration:</span>
-              <span className="value">
-                {Math.floor(commuteData.duration.value / 60)} minutes
-              </span>
-            </div>
-            
-            <div className="commute-detail">
-              <span className="label">Mode:</span>
-              <span className="value">{mode.charAt(0).toUpperCase() + mode.slice(1)}</span>
-            </div>
-          </div>
-          
-          <div className="commute-map">
-            {/* Map would be rendered here using Mapbox GL JS */}
-            <div className="map-placeholder">
-              <p>Map visualization would be displayed here</p>
-              <p>From: {commuteData.origin.name}</p>
-              <p>To: {commuteData.destination.name}</p>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Skills Gap Analysis Component
-export const SkillsGapAnalysisComponent: React.FC = () => {
-  const [userId, setUserId] = useState<string>('');
-  const [jobId, setJobId] = useState<string>('');
-  const [jobs, setJobs] = useState<any[]>([]);
-  const [analysis, setAnalysis] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Get current user ID
-    const fetchUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        setUserId(session.user.id);
-      }
-    };
-
-    // Fetch available jobs
-    const fetchJobs = async () => {
-      const { data, error } = await supabase
-        .from('job_postings')
-        .select('id, title, company')
-        .eq('status', 'active');
-        
-      if (!error && data) {
-        setJobs(data);
-      }
-    };
-
-    fetchUser();
-    fetchJobs();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await OpenAIService.analyzeSkillsGap(userId, jobId);
-      
-      if (response.success && response.data) {
-        setAnalysis(response.data);
-      } else {
-        setError(response.error || 'Failed to analyze skills gap');
-      }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="skills-gap-container">
-      <h2>Skills Gap Analysis</h2>
-      
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="jobId">Select Job</label>
-          <select
-            id="jobId"
-            value={jobId}
-            onChange={(e) => setJobId(e.target.value)}
-            required
-          >
-            <option value="">-- Select a job --</option>
-            {jobs.map(job => (
-              <option key={job.id} value={job.id}>
-                {job.title} at {job.company}
-              </option>
-            ))}
-          </select>
-        </div>
-        
-        <button type="submit" disabled={loading || !userId || !jobId}>
-          {loading ? 'Analyzing...' : 'Analyze Skills Gap'}
-        </button>
-      </form>
-      
-      {error && <div className="error-message">{error}</div>}
-      
-      {analysis && (
-        <div className="analysis-results">
-          <h3>Skills Gap Analysis</h3>
-          
-          <div className="analysis-section">
-            <h4>Your Current Skills</h4>
-            <ul className="skills-list">
-              {analysis.currentSkills.map((skill: string, index: number) => (
-                <li key={index} className="current-skill">{skill}</li>
-              ))}
-            </ul>
-          </div>
-          
-          <div className="analysis-section">
-            <h4>Missing Skills</h4>
-            {analysis.missingSkills.length === 0 ? (
-              <p>You have all the required skills for this job!</p>
-            ) : (
-              <ul className="missing-skills-list">
-                {analysis.missingSkills.map((skill: any, index: number) => (
-                  <li key={index} className="missing-skill">
-                    <div className="skill-header">
-                      <span className="skill-name">{skill.skill}</span>
-                      <span className="skill-importance">
-                        Importance: {skill.importance}/5
-                      </span>
-                    </div>
-                    {skill.resources.length > 0 && (
-                      <div className="skill-resources">
-                        <strong>Resources to learn:</strong>
-                        <ul>
-                          {skill.resources.map((resource: string, i: number) => (
-                            <li key={i}>{resource}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+          {searchResults.length > 0 ? (
+            <div className="search-results">
+              <h4>{searchResults.length} Jobs Found</h4>
+              <ul className="job-list">
+                {searchResults.map((job, index) => (
+                  <li key={index} className="job-item">
+                    <h5>{job.title}</h5>
+                    <p className="company">{job.company}</p>
+                    <p className="location">{job.location} ({job.distance.toFixed(1)} km away)</p>
+                    <p className="job-type">{job.jobType}</p>
+                    <a href={job.url} target="_blank" rel="noopener noreferrer" className="view-job">
+                      View Job
+                    </a>
                   </li>
                 ))}
               </ul>
-            )}
-          </div>
-          
-          <div className="analysis-section">
-            <h4>Recommendations</h4>
-            <p>{analysis.recommendations}</p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Interview Preparation Component
-export const InterviewPrepComponent: React.FC = () => {
-  const [userId, setUserId] = useState<string>('');
-  const [jobId, setJobId] = useState<string>('');
-  const [jobs, setJobs] = useState<any[]>([]);
-  const [prepData, setPrepData] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Get current user ID
-    const fetchUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        setUserId(session.user.id);
-      }
-    };
-
-    // Fetch available jobs
-    const fetchJobs = async () => {
-      const { data, error } = await supabase
-        .from('job_postings')
-        .select('id, title, company')
-        .eq('status', 'active');
-        
-      if (!error && data) {
-        setJobs(data);
-      }
-    };
-
-    fetchUser();
-    fetchJobs();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await OpenAIService.prepareForInterview(userId, jobId);
-      
-      if (response.success && response.data) {
-        setPrepData(response.data);
-      } else {
-        setError(response.error || 'Failed to prepare for interview');
-      }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="interview-prep-container">
-      <h2>Interview Preparation</h2>
-      
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="jobId">Select Job</label>
-          <select
-            id="jobId"
-            value={jobId}
-            onChange={(e) => setJobId(e.target.value)}
-            required
-          >
-            <option value="">-- Select a job --</option>
-            {jobs.map(job => (
-              <option key={job.id} value={job.id}>
-                {job.title} at {job.company}
-              </option>
-            ))}
-          </select>
-        </div>
-        
-        <button type="submit" disabled={loading || !userId || !jobId}>
-          {loading ? 'Preparing...' : 'Prepare for Interview'}
-        </button>
-      </form>
-      
-      {error && <div className="error-message">{error}</div>}
-      
-      {prepData && (
-        <div className="prep-results">
-          <h3>Interview Preparation</h3>
-          
-          <div className="prep-section">
-            <h4>Common Questions</h4>
-            <div className="questions-list">
-              {prepData.commonQuestions.map((item: any, index: number) => (
-                <div key={index} className="question-item">
-                  <div className="question">
-                    <strong>Q: {item.question}</strong>
-                  </div>
-                  <div className="answer">
-                    <p><strong>Sample Answer:</strong> {item.sampleAnswer}</p>
-                  </div>
-                </div>
-              ))}
             </div>
-          </div>
-          
-          <div className="prep-section">
-            <h4>Interview Tips</h4>
-            <ul className="tips-list">
-              {prepData.tips.map((tip: string, index: number) => (
-                <li key={index}>{tip}</li>
-              ))}
-            </ul>
-          </div>
-          
-          <div className="prep-section">
-            <h4>Preparation Advice</h4>
-            <p>{prepData.preparation}</p>
-          </div>
+          ) : (
+            <p className="no-results">No jobs found in this area. Try expanding your search radius.</p>
+          )}
         </div>
       )}
     </div>
